@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sistem Pengelolaan Data Pasien — Double Linked List | UNJ</title>
+    <meta name="description" content="Aplikasi web HealthTech Universitas Negeri Jakarta untuk pengelolaan data pasien rumah sakit menggunakan struktur data Double Linked List." />
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: {
+                            50:  '#f0f3f9',
+                            100: '#dce3f0',
+                            200: '#b9c7e1',
+                            300: '#8da4cc',
+                            400: '#5f7db3',
+                            500: '#3d5a96',
+                            600: '#2d4578',
+                            700: '#1e3356',
+                            800: '#152544',
+                            900: '#0f1b33',
+                            950: '#080e1c',
+                        },
+                        gold: {
+                            50:  '#fefbf0',
+                            100: '#fcf3d4',
+                            200: '#f8e5a4',
+                            300: '#f2d06a',
+                            400: '#e8b731',
+                            500: '#d4a017',
+                            600: '#b38412',
+                        },
+                        cream: {
+                            50:  '#fdfcfa',
+                            100: '#faf7f2',
+                            200: '#f4f0e6',
+                            300: '#ede7d8',
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
+                    },
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts: Inter + JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+
+    <style>
+        /* =========== Base =========== */
+        *, *::before, *::after { box-sizing: border-box; }
+        body {
+            position: relative;
+            min-height: 100vh;
+            background-color: #faf7f2;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            color: #152544;
+        }
+
+        /* =========== Batik Background Layer =========== */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: url("{{ url_for('static', filename='Batik.png') }}");
+            background-repeat: repeat;
+            background-size: 500px auto;
+            background-position: center top;
+            opacity: 0.75;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Ensure content sits above the batik */
+        header, main, footer, #toast {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* =========== Animations =========== */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fade-in-up { animation: fadeInUp .45s cubic-bezier(0.16, 1, 0.3, 1) both; }
+        .anim-delay-1 { animation-delay: .08s; }
+        .anim-delay-2 { animation-delay: .16s; }
+        .anim-delay-3 { animation-delay: .24s; }
+        .animate-slide-down { animation: slideDown .3s ease-out both; }
+
+        /* =========== Toast =========== */
+        #toast {
+            transition: transform .35s cubic-bezier(.4,0,.2,1), opacity .35s ease;
+        }
+        #toast.show  { transform: translateY(0); opacity: 1; }
+        #toast.hide  { transform: translateY(-20px); opacity: 0; pointer-events: none; }
+
+        /* =========== Buttons =========== */
+        .btn-action {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-action:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(15,27,51,0.15);
+        }
+        .btn-action:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        /* =========== Input Focus =========== */
+        .input-field {
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+        }
+        .input-field:focus {
+            border-color: #2d4578;
+            box-shadow: 0 0 0 3px rgba(45,69,120,0.1);
+            background-color: #fff;
+        }
+
+        /* =========== Table Row Hover =========== */
+        .table-row {
+            transition: background-color 0.15s ease;
+        }
+        .table-row:hover {
+            background-color: rgba(45,69,120,0.04);
+        }
+
+        /* =========== Section Card =========== */
+        .section-card {
+            background: #ffffff;
+            border: 1px solid #ede7d8;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(15,27,51,0.06);
+        }
+        .section-header {
+            background-color: #0f1b33;
+            padding: 14px 20px;
+            border-bottom: 2px solid #d4a017;
+        }
+
+        /* =========== DLL Node Visualization =========== */
+        .dll-node {
+            border: 2px solid #ede7d8;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #ffffff;
+            transition: all 0.2s ease;
+        }
+        .dll-node:hover {
+            border-color: #b9c7e1;
+            box-shadow: 0 2px 8px rgba(15,27,51,0.08);
+        }
+        .dll-node.active {
+            border-color: #2563eb;
+            box-shadow: 0 2px 12px rgba(37,99,235,0.18);
+        }
+        .dll-node .dll-node-header {
+            background-color: #dce3f0;
+            border-bottom: 1px solid #ede7d8;
+        }
+        .dll-node.active .dll-node-header {
+            background-color: #1e3a8a;
+            border-bottom-color: #1e3a8a;
+        }
+        .dll-node .dll-node-header p {
+            color: #0f1b33;
+        }
+        .dll-node.active .dll-node-header p {
+            color: #ffffff;
+        }
+
+        /* =========== Gold Accent =========== */
+        .gold-line {
+            height: 3px;
+            background: linear-gradient(90deg, #d4a017, #b38412, #d4a017);
+        }
+
+        /* =========== Scrollbar =========== */
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #b9c7e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #8da4cc; }
+
+        /* =========== Responsive Table =========== */
+        @media (max-width: 640px) {
+            .resp-table { font-size: 12px; }
+            .resp-table th, .resp-table td { padding: 8px 10px; }
+        }
+    </style>
+</head>
+
+<body class="min-h-screen antialiased pb-8">
+
+   <!-- ======================== HEADER ======================== -->
+    <!-- ======================== HEADER ======================== -->
+    <header class="bg-navy-900 relative overflow-hidden">
+        <!-- Batik Corner: Kiri Atas (TIDAK DIGANGGU GUGAT) -->
+        <img src="{{ url_for('static', filename='batik-kiri-atas.png') }}" alt=""
+             class="absolute -top-3 -left-4 w-24 sm:w-36 pointer-events-none select-none"
+             style="opacity: 0.65; z-index: 0;" />
+        <!-- Batik Corner: Kanan Bawah (TIDAK DIGANGGU GUGAT) -->
+        <img src="{{ url_for('static', filename='batik-kanan-bawah.png') }}" alt=""
+             class="absolute -bottom-2 -right-5 w-[104px] sm:w-[152px] pointer-events-none select-none"
+             style="opacity: 0.65; z-index: 0;" />
+
+       <!-- 1. BATIK GARIS KIRI (Digeser lebih ke kanan / mendekati logo) -->
+        <img src="{{ url_for('static', filename='batikgariskiri.png') }}" alt="Ornamen Batik Kiri" 
+             class="hidden xl:block absolute left-60 2xl:left-72 top-1/2 transform -translate-y-1/2 h-8 lg:h-10 object-contain opacity-80 mix-blend-screen pointer-events-none" style="z-index: 1;" />
+
+        <!-- 2. BATIK GARIS KANAN (Digeser lebih ke kiri / mendekati logo) -->
+        <img src="{{ url_for('static', filename='batikgariskanan.png') }}" alt="Ornamen Batik Kanan" 
+             class="hidden xl:block absolute right-60 2xl:right-72 top-1/2 transform -translate-y-1/2 h-8 lg:h-10 object-contain opacity-80 mix-blend-screen pointer-events-none" style="z-index: 1;" />
+        <!-- 3. CONTAINER UTAMA (LOGO & JUDUL DITENGAH SEMPURNA) -->
+        <div class="w-full mx-auto px-4 py-4 relative flex justify-center" style="z-index: 2;">
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 text-center sm:text-left py-2">
+                <!-- Logo UNJ -->
+                <img src="{{ url_for('static', filename='unj.png') }}" alt="Logo Universitas Negeri Jakarta"
+                     class="w-16 h-16 sm:w-20 sm:h-20 object-contain shrink-0" />
+                <div class="min-w-0">
+                    <p class="text-gold-400 text-xs sm:text-sm font-semibold tracking-widest uppercase mb-1">Universitas Negeri Jakarta</p>
+                    <h1 class="text-white text-xl sm:text-2xl font-bold tracking-tight leading-tight">
+                        Sistem Pengelolaan Data Pasien
+                    </h1>
+                    <p class="text-navy-300 text-xs sm:text-sm font-medium mt-1.5">
+                        Double Linked List — HealthTech In-Memory Architecture
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Gold accent line -->
+        <div class="gold-line"></div>
+    </header>
+
+    <!-- ======================== TOAST NOTIFICATION ======================== -->
+    <div id="toast" class="hide fixed top-5 right-5 z-50 max-w-sm w-full rounded-lg shadow-lg p-4 flex items-start gap-3 border"
+         role="alert" aria-live="assertive">
+        <div id="toast-icon" class="shrink-0 mt-0.5"></div>
+        <div class="flex-1">
+            <p id="toast-title" class="font-bold text-sm"></p>
+            <p id="toast-msg" class="text-sm mt-0.5"></p>
+        </div>
+        <button onclick="hideToast()" class="text-slate-400 hover:text-slate-600 transition-colors p-1" aria-label="Tutup notifikasi">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+            </svg>
+        </button>
+    </div>
+
+    <!-- ======================== MAIN CONTAINER ======================== -->
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+
+        <!-- ======================== SEARCH SECTION ======================== -->
+        <section class="animate-fade-in-up">
+            <div class="section-card">
+                <div class="p-5 sm:p-6">
+                    <!-- Title Row -->
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-4">
+                        <div class="shrink-0 w-12 h-12 bg-navy-900 rounded-full flex items-center justify-center shadow-sm">
+                            <svg class="w-5 h-5 text-gold-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-bold text-navy-900 tracking-tight">Cari Pasien by ID</h2>
+                            <p class="text-navy-400 text-sm font-medium">Traversal pencarian node DLL (head → tail)</p>
+                        </div>
+                    </div>
+
+                    <!-- Search Form -->
+                    <form onsubmit="event.preventDefault(); doCariByID();" class="flex flex-col sm:flex-row gap-3">
+                        <input id="input-search-id" type="text" placeholder="Masukkan ID Pasien (contoh: P001)..."
+                               class="input-field flex-1 border border-cream-300 bg-cream-50 rounded-md px-4 py-2.5 text-sm text-navy-900 placeholder-navy-300 font-medium focus:outline-none" />
+                        <button type="submit"
+                                class="btn-action bg-navy-900 hover:bg-navy-800 text-white text-sm font-semibold px-6 py-2.5 rounded-md shrink-0 flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                            </svg>
+                            Cari Pasien
+                        </button>
+                    </form>
+
+                    <!-- Result Box -->
+                    <div id="search-result" class="hidden animate-slide-down mt-4 bg-cream-100 border border-gold-200 rounded-md p-4">
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                            <div class="flex items-center gap-1.5 shrink-0 text-navy-700 text-xs font-bold uppercase tracking-wider">
+                                <svg class="w-3.5 h-3.5 text-green-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                                </svg>
+                                Pasien Ditemukan
+                            </div>
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-2 flex-1 text-sm">
+                                <div>
+                                    <span class="text-navy-400 text-[10px] block uppercase tracking-wider font-semibold">ID Pasien</span>
+                                    <strong id="search-res-id" class="text-navy-900 font-mono font-bold">—</strong>
+                                </div>
+                                <div>
+                                    <span class="text-navy-400 text-[10px] block uppercase tracking-wider font-semibold">Nama</span>
+                                    <strong id="search-res-nama" class="text-navy-900 font-bold truncate block">—</strong>
+                                </div>
+                                <div>
+                                    <span class="text-navy-400 text-[10px] block uppercase tracking-wider font-semibold">Usia</span>
+                                    <strong id="search-res-usia" class="text-navy-900 font-bold">—</strong>
+                                </div>
+                                <div>
+                                    <span class="text-navy-400 text-[10px] block uppercase tracking-wider font-semibold">Diagnosa</span>
+                                    <strong id="search-res-diagnosa" class="text-navy-900 font-bold truncate block">—</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ======================== MAIN 2-COLUMN GRID ======================== -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+            <!-- ==================================================
+                 CARD 1: FORM OPERATIONS
+                 ================================================== -->
+            <section class="lg:col-span-4 animate-fade-in-up anim-delay-1">
+                <div class="section-card h-full">
+                    <div class="section-header">
+                        <h2 class="text-white text-sm font-bold flex items-center gap-2">
+                            <svg class="w-4 h-4 text-gold-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                            </svg>
+                            Form Operations Pasien
+                        </h2>
+                        <p class="text-navy-400 text-[10px] font-medium mt-0.5">Input & hapus data node DLL</p>
+                    </div>
+
+                    <div class="p-5 space-y-4">
+                        <!-- Input Fields -->
+                        <div class="space-y-3">
+                            <div>
+                                <label for="input-id" class="block text-[11px] font-semibold text-navy-500 uppercase tracking-wider mb-1">ID Pasien</label>
+                                <input id="input-id" type="text" placeholder="Contoh: P001"
+                                       class="input-field w-full border border-cream-300 bg-cream-50 rounded-md px-3.5 py-2 text-sm text-navy-900 placeholder-navy-300 font-medium focus:outline-none" />
+                            </div>
+                            <div>
+                                <label for="input-nama" class="block text-[11px] font-semibold text-navy-500 uppercase tracking-wider mb-1">Nama Pasien</label>
+                                <input id="input-nama" type="text" placeholder="Nama lengkap pasien"
+                                       class="input-field w-full border border-cream-300 bg-cream-50 rounded-md px-3.5 py-2 text-sm text-navy-900 placeholder-navy-300 font-medium focus:outline-none" />
+                            </div>
+                            <div>
+                                <label for="input-usia" class="block text-[11px] font-semibold text-navy-500 uppercase tracking-wider mb-1">Usia (Tahun)</label>
+                                <input id="input-usia" type="number" min="0" max="150" placeholder="Contoh: 35"
+                                       class="input-field w-full border border-cream-300 bg-cream-50 rounded-md px-3.5 py-2 text-sm text-navy-900 placeholder-navy-300 font-medium focus:outline-none" />
+                            </div>
+                            <div>
+                                <label for="input-diagnosa" class="block text-[11px] font-semibold text-navy-500 uppercase tracking-wider mb-1">Diagnosa Medis</label>
+                                <input id="input-diagnosa" type="text" placeholder="Hasil diagnosa medis"
+                                       class="input-field w-full border border-cream-300 bg-cream-50 rounded-md px-3.5 py-2 text-sm text-navy-900 placeholder-navy-300 font-medium focus:outline-none" />
+                            </div>
+                            <div id="target-id-group" class="hidden animate-slide-down bg-gold-50 p-3.5 rounded-md border border-gold-300">
+                                <label for="input-target" class="block text-[11px] font-semibold text-navy-600 uppercase tracking-wider mb-1">ID Target (Insert Setelah)</label>
+                                <input id="input-target" type="text" placeholder="Masukkan ID pasien acuan"
+                                       class="input-field w-full border border-gold-300 bg-white rounded-md px-3.5 py-2 text-sm text-navy-900 placeholder-navy-300 font-medium focus:outline-none" />
+                            </div>
+                        </div>
+
+                        <!-- Divider -->
+                        <div class="relative py-1">
+                            <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-cream-300"></div></div>
+                            <div class="relative flex justify-center">
+                                <span class="bg-white px-3 text-[10px] font-bold text-navy-400 uppercase tracking-widest">Aksi Node</span>
+                            </div>
+                        </div>
+
+                        <!-- Insert Actions -->
+                        <div class="space-y-2">
+                            <p class="text-[11px] font-semibold text-navy-500 uppercase tracking-wider">Operasi Penyisipan (Insert)</p>
+                            <div class="grid grid-cols-3 gap-2">
+                                <button onclick="doInsert('depan')"
+                                        class="btn-action bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold py-2.5 px-2 rounded-md flex items-center justify-center gap-1">
+                                    <span>+</span> Depan
+                                </button>
+                                <button onclick="showTargetAndInsert()"
+                                        class="btn-action bg-navy-500 hover:bg-navy-600 text-white text-[11px] font-bold py-2.5 px-2 rounded-md flex items-center justify-center gap-1">
+                                    <span>◆</span> Tengah
+                                </button>
+                                <button onclick="doInsert('belakang')"
+                                        class="btn-action bg-gold-500 hover:bg-gold-600 text-navy-950 text-[11px] font-bold py-2.5 px-2 rounded-md flex items-center justify-center gap-1">
+                                    <span>◆</span> Belakang
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Delete Actions -->
+                        <div class="space-y-2">
+                            <p class="text-[11px] font-semibold text-navy-500 uppercase tracking-wider">Operasi Penghapusan (Delete)</p>
+                            <div class="grid grid-cols-3 gap-2">
+                                <button onclick="doHapus('depan')"
+                                        class="btn-action bg-red-600 hover:bg-red-700 text-white text-[11px] font-bold py-2.5 px-2 rounded-md">
+                                    × Depan
+                                </button>
+                                <button onclick="doHapusByID()"
+                                        class="btn-action bg-red-500 hover:bg-red-600 text-white text-[11px] font-bold py-2.5 px-2 rounded-md">
+                                    × By ID
+                                </button>
+                                <button onclick="doHapus('belakang')"
+                                        class="btn-action bg-red-600 hover:bg-red-700 text-white text-[11px] font-bold py-2.5 px-2 rounded-md">
+                                    × Belakang
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================================================
+                 RIGHT COLUMN: TABLE & NAVIGATOR
+                 ================================================== -->
+            <div class="lg:col-span-8 space-y-6">
+
+                <!-- CARD 2: DATA TABLE -->
+                <section class="animate-fade-in-up anim-delay-2">
+                    <div class="section-card">
+                        <div class="section-header flex items-center justify-between">
+                            <div>
+                                <h2 class="text-white text-sm font-bold flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-gold-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 0 1-1.125-1.125M3.375 19.5h7.5c.621 0 1.125-.504 1.125-1.125m-9.75 0V5.625m0 12.75v-1.5c0-.621.504-1.125 1.125-1.125m18.375 2.625V5.625m0 12.75c0 .621-.504 1.125-1.125 1.125m1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125m0 3.75h-7.5A1.125 1.125 0 0 1 12 18.375m9.75-12.75c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125m19.5 0v1.5c0 .621-.504 1.125-1.125 1.125M2.25 5.625v1.5c0 .621.504 1.125 1.125 1.125m0 0h17.25m-17.25 0h7.5c.621 0 1.125.504 1.125 1.125M3.375 8.25c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125m17.25-3.75h-7.5c-.621 0-1.125.504-1.125 1.125m8.625-1.125c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125m-17.25 0h7.5m-7.5 0c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125M12 10.875v-1.5m0 1.5c0 .621-.504 1.125-1.125 1.125M12 10.875c0 .621.504 1.125 1.125 1.125m-2.25 0c.621 0 1.125.504 1.125 1.125M13.125 12h7.5m-7.5 0c-.621 0-1.125.504-1.125 1.125M20.625 12c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125m-17.25 0h7.5M12 14.625v-1.5m0 1.5c0 .621-.504 1.125-1.125 1.125M12 14.625c0 .621.504 1.125 1.125 1.125m-2.25 0c.621 0 1.125.504 1.125 1.125m0 0v.375" />
+                                    </svg>
+                                    Data Seluruh Pasien
+                                </h2>
+                                <p class="text-navy-400 text-[10px] font-medium mt-0.5">Traversal urut Head → Tail</p>
+                            </div>
+                            <span id="badge-count" class="text-gold-400 text-[11px] font-bold border border-gold-500/30 px-2.5 py-1 rounded">
+                                0 pasien
+                            </span>
+                        </div>
+
+                        <!-- Table Wrapper -->
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm text-left resp-table">
+                                <thead>
+                                    <tr class="bg-navy-900 text-navy-200 text-[11px] font-semibold uppercase tracking-wider">
+                                        <th class="px-4 py-3">No</th>
+                                        <th class="px-4 py-3">ID Pasien</th>
+                                        <th class="px-4 py-3">Nama Pasien</th>
+                                        <th class="px-4 py-3">Usia</th>
+                                        <th class="px-4 py-3">Diagnosa</th>
+                                        <th class="px-4 py-3">Posisi Node</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-body" class="divide-y divide-cream-200 text-navy-800">
+                                    <!-- Dynamic rows via JavaScript -->
+                                </tbody>
+                            </table>
+
+                            <!-- Empty Table State -->
+                            <div id="empty-table" class="hidden text-center py-10 px-4">
+                                <div class="w-12 h-12 mx-auto bg-cream-200 rounded-full flex items-center justify-center mb-3">
+                                    <svg class="w-6 h-6 text-navy-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0-3-3m3 3 3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
+                                    </svg>
+                                </div>
+                                <p class="text-navy-800 font-bold text-sm">Belum Ada Data Pasien</p>
+                                <p class="text-navy-400 text-xs mt-1">Gunakan Form Operations untuk menambahkan pasien baru.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- CARD 3: NAVIGASI 2 ARAH -->
+                <section class="animate-fade-in-up anim-delay-3">
+                    <div class="section-card relative overflow-hidden">
+                        <div class="section-header relative" style="z-index: 1;">
+                            <h2 class="text-white text-sm font-bold flex items-center gap-2">
+                                <svg class="w-4 h-4 text-gold-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
+                                </svg>
+                                Navigasi 2 Arah (Prev / Next Pointer)
+                            </h2>
+                            <p class="text-navy-400 text-[10px] font-medium mt-0.5">Penelusuran interaktif node Double Linked List</p>
+                        </div>
+
+                        <div class="p-5 space-y-4 relative" style="z-index: 1;">
+                            <!-- DLL Chain Visualization -->
+                            <div id="dll-chain" class="flex items-center justify-start gap-2 overflow-x-auto py-4 px-6 select-none">
+                                <p class="text-navy-400 text-sm italic">Belum ada node dalam Linked List</p>
+                            </div>
+
+                            <!-- Hidden data-binding elements for JS compatibility -->
+                            <div id="nav-card" class="sr-only" aria-hidden="true">
+                                <div id="nav-empty">Tidak Ada Node Aktif</div>
+                                <div id="nav-data" class="hidden">
+                                    <p id="nav-id">—</p>
+                                    <p id="nav-nama">—</p>
+                                    <p id="nav-usia">—</p>
+                                    <p id="nav-diagnosa">—</p>
+                                </div>
+                            </div>
+
+                            <!-- Prev / Next Navigation -->
+                            <div id="nav-content" class="flex items-center justify-between gap-4 pt-2 border-t border-cream-300">
+                                <button id="btn-prev" onclick="doNavigate('prev')"
+                                        class="btn-action bg-cream-200 hover:bg-cream-300 text-navy-700 font-bold text-sm px-5 py-2.5 rounded-md border border-cream-300 disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-2"
+                                        disabled>
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+                                    </svg>
+                                    Prev
+                                </button>
+
+                                <button id="btn-next" onclick="doNavigate('next')"
+                                        class="btn-action bg-navy-900 hover:bg-navy-800 text-white font-bold text-sm px-5 py-2.5 rounded-md disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-2"
+                                        disabled>
+                                    Next
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div><!-- /right column -->
+        </div><!-- /grid -->
+
+    </main>
+
+    <!-- ======================== FOOTER ======================== -->
+    <footer class="border-t border-cream-300 mt-8 relative">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+                <img src="{{ url_for('static', filename='unj.png') }}" alt="UNJ" class="w-6 h-6 object-contain opacity-60" />
+                <span class="text-navy-500 text-[11px] font-medium">Universitas Negeri Jakarta</span>
+            </div>
+            <p class="text-navy-400 text-[11px] font-medium text-center sm:text-right">
+                Double Linked List — Flask & Tailwind CSS HealthTech System
+            </p>
+        </div>
+    </footer>
+
+    <!-- ======================== JAVASCRIPT ======================== -->
+    <script>
+        // ===================================================================
+        // TOAST NOTIFICATION SYSTEM
+        // ===================================================================
+        let toastTimeout = null;
+
+        function showToast(title, message, type = 'success') {
+            const toast    = document.getElementById('toast');
+            const tTitle   = document.getElementById('toast-title');
+            const tMsg     = document.getElementById('toast-msg');
+            const tIcon    = document.getElementById('toast-icon');
+
+            tTitle.textContent = title;
+            tMsg.textContent   = message;
+
+            // Reset classes
+            toast.className = 'fixed top-5 right-5 z-50 max-w-sm w-full rounded-lg shadow-lg p-4 flex items-start gap-3 border';
+
+            if (type === 'success') {
+                toast.classList.add('bg-green-50', 'border-green-400');
+                tTitle.classList = 'font-bold text-sm text-green-900';
+                tMsg.classList   = 'text-sm mt-0.5 text-green-700';
+                tIcon.innerHTML  = '<svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>';
+            } else {
+                toast.classList.add('bg-red-50', 'border-red-400');
+                tTitle.classList = 'font-bold text-sm text-red-900';
+                tMsg.classList   = 'text-sm mt-0.5 text-red-700';
+                tIcon.innerHTML  = '<svg class="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd" /></svg>';
+            }
+
+            toast.classList.add('show');
+
+            if (toastTimeout) clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(hideToast, 4000);
+        }
+
+        function hideToast() {
+            const toast = document.getElementById('toast');
+            toast.classList.remove('show');
+            toast.classList.add('hide');
+        }
+
+        // ===================================================================
+        // FORM HELPERS
+        // ===================================================================
+        function getFormData() {
+            return {
+                id_pasien: document.getElementById('input-id').value.trim(),
+                nama:      document.getElementById('input-nama').value.trim(),
+                usia:      document.getElementById('input-usia').value.trim(),
+                diagnosa:  document.getElementById('input-diagnosa').value.trim(),
+            };
+        }
+
+        function clearForm() {
+            ['input-id', 'input-nama', 'input-usia', 'input-diagnosa', 'input-target'].forEach(id => {
+                document.getElementById(id).value = '';
+            });
+            document.getElementById('target-id-group').classList.add('hidden');
+        }
+
+        function validateForm(includeTarget = false) {
+            const data = getFormData();
+            if (!data.id_pasien || !data.nama || !data.usia || !data.diagnosa) {
+                showToast('Validasi Gagal', 'Semua field wajib diisi.', 'error');
+                return null;
+            }
+            if (isNaN(parseInt(data.usia)) || parseInt(data.usia) < 0) {
+                showToast('Validasi Gagal', 'Usia harus berupa angka positif.', 'error');
+                return null;
+            }
+            if (includeTarget) {
+                const target = document.getElementById('input-target').value.trim();
+                if (!target) {
+                    showToast('Validasi Gagal', 'ID Target wajib diisi untuk insert tengah.', 'error');
+                    return null;
+                }
+                data.target_id = target;
+            }
+            data.usia = parseInt(data.usia);
+            return data;
+        }
+
+        // ===================================================================
+        // API CALLS: INSERT
+        // ===================================================================
+        async function doInsert(position) {
+            const data = validateForm(false);
+            if (!data) return;
+
+            try {
+                const res = await fetch(`/api/insert/${position}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data),
+                });
+                const json = await res.json();
+                showToast(
+                    json.success ? 'Berhasil!' : 'Gagal!',
+                    json.message,
+                    json.success ? 'success' : 'error'
+                );
+                if (json.success) { clearForm(); refreshAll(); }
+            } catch (err) {
+                showToast('Error', 'Gagal menghubungi server.', 'error');
+            }
+        }
+
+        function showTargetAndInsert() {
+            const group = document.getElementById('target-id-group');
+            if (group.classList.contains('hidden')) {
+                group.classList.remove('hidden');
+                document.getElementById('input-target').focus();
+                return;
+            }
+            doInsertTengah();
+        }
+
+        async function doInsertTengah() {
+            const data = validateForm(true);
+            if (!data) return;
+
+            try {
+                const res = await fetch('/api/insert/tengah', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data),
+                });
+                const json = await res.json();
+                showToast(
+                    json.success ? 'Berhasil!' : 'Gagal!',
+                    json.message,
+                    json.success ? 'success' : 'error'
+                );
+                if (json.success) { clearForm(); refreshAll(); }
+            } catch (err) {
+                showToast('Error', 'Gagal menghubungi server.', 'error');
+            }
+        }
+
+        // ===================================================================
+        // API CALLS: DELETE
+        // ===================================================================
+        async function doHapus(position) {
+            try {
+                const res = await fetch(`/api/hapus/${position}`, { method: 'DELETE' });
+                const json = await res.json();
+                showToast(
+                    json.success ? 'Berhasil!' : 'Gagal!',
+                    json.message,
+                    json.success ? 'success' : 'error'
+                );
+                refreshAll();
+            } catch (err) {
+                showToast('Error', 'Gagal menghubungi server.', 'error');
+            }
+        }
+
+        async function doHapusByID() {
+            const idPasien = document.getElementById('input-id').value.trim();
+            if (!idPasien) {
+                showToast('Validasi Gagal', 'Masukkan ID Pasien di field ID untuk hapus by ID.', 'error');
+                return;
+            }
+            try {
+                const res = await fetch('/api/hapus/id', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id_pasien: idPasien }),
+                });
+                const json = await res.json();
+                showToast(
+                    json.success ? 'Berhasil!' : 'Gagal!',
+                    json.message,
+                    json.success ? 'success' : 'error'
+                );
+                if (json.success) clearForm();
+                refreshAll();
+            } catch (err) {
+                showToast('Error', 'Gagal menghubungi server.', 'error');
+            }
+        }
+
+        // ===================================================================
+        // API CALLS: SEARCH (CARI PASIEN BY ID)
+        // ===================================================================
+        async function doCariByID() {
+            const idPasien = document.getElementById('input-search-id').value.trim();
+            const resultBox = document.getElementById('search-result');
+
+            if (!idPasien) {
+                showToast('Validasi Gagal', 'Masukkan ID Pasien yang ingin dicari.', 'error');
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/cari', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id_pasien: idPasien }),
+                });
+                const json = await res.json();
+
+                if (json.success && json.data) {
+                    document.getElementById('search-res-id').textContent       = json.data.id_pasien;
+                    document.getElementById('search-res-nama').textContent     = json.data.nama;
+                    document.getElementById('search-res-usia').textContent     = json.data.usia + ' Tahun';
+                    document.getElementById('search-res-diagnosa').textContent = json.data.diagnosa;
+
+                    resultBox.classList.remove('hidden');
+                    showToast('Pasien Ditemukan', json.message, 'success');
+                } else {
+                    resultBox.classList.add('hidden');
+                    showToast('Tidak Ditemukan', json.message || 'Pasien tidak ditemukan.', 'error');
+                }
+            } catch (err) {
+                showToast('Error', 'Gagal menghubungi server.', 'error');
+            }
+        }
+
+        // ===================================================================
+        // API CALLS: DISPLAY ALL (TRAVERSAL)
+        // ===================================================================
+        async function refreshTable() {
+            try {
+                const res  = await fetch('/api/pasien');
+                const json = await res.json();
+                const tbody = document.getElementById('table-body');
+                const empty = document.getElementById('empty-table');
+                const badge = document.getElementById('badge-count');
+
+                badge.textContent = `${json.count} pasien`;
+
+                if (json.data.length === 0) {
+                    tbody.innerHTML = '';
+                    empty.classList.remove('hidden');
+                    renderDLLChain([]);
+                    return;
+                }
+
+                empty.classList.add('hidden');
+                tbody.innerHTML = json.data.map((p, i) => {
+                    let posLabel = '';
+                    if (i === 0 && json.data.length === 1) posLabel = 'Head & Tail';
+                    else if (i === 0) posLabel = 'Head';
+                    else if (i === json.data.length - 1) posLabel = 'Tail';
+                    else posLabel = 'Middle';
+
+                    const posStyle = posLabel.includes('Head')
+                        ? 'bg-navy-900 text-white'
+                        : posLabel === 'Tail'
+                            ? 'bg-gold-500 text-navy-950'
+                            : 'bg-navy-200 text-navy-700';
+
+                    return `
+                        <tr class="table-row border-b border-cream-200">
+                            <td class="px-4 py-3 text-navy-400 font-mono text-xs">${i + 1}</td>
+                            <td class="px-4 py-3 font-bold text-navy-900 font-mono">${escapeHtml(p.id_pasien)}</td>
+                            <td class="px-4 py-3 font-semibold text-navy-800">${escapeHtml(p.nama)}</td>
+                            <td class="px-4 py-3 text-navy-600">${p.usia} th</td>
+                            <td class="px-4 py-3 text-navy-600">${escapeHtml(p.diagnosa)}</td>
+                            <td class="px-4 py-3">
+                                <span class="inline-flex text-[10px] font-bold px-2.5 py-0.5 rounded ${posStyle}">${posLabel}</span>
+                            </td>
+                        </tr>`;
+                }).join('');
+
+                renderDLLChain(json.data);
+            } catch (err) {
+                console.error('refreshTable error:', err);
+            }
+        }
+
+        // ===================================================================
+        // DLL CHAIN VISUALIZATION (VISUAL ONLY — NO LOGIC)
+        // ===================================================================
+        function renderDLLChain(data) {
+            const chain = document.getElementById('dll-chain');
+            if (!chain) return;
+
+            if (data.length === 0) {
+                chain.innerHTML = '<p class="text-navy-400 text-sm italic">Belum ada node dalam Linked List</p>';
+                return;
+            }
+
+            let html = '';
+
+            // HEAD badge
+            html += '<span class="shrink-0 text-[10px] font-bold bg-gold-500 text-navy-950 px-2.5 py-1 rounded-full shadow-sm">HEAD</span>';
+
+            data.forEach((p, i) => {
+                // Arrow from HEAD or from previous node
+                html += '<span class="shrink-0 text-gold-500 text-lg leading-none mx-0.5">→</span>';
+
+                // Node card
+                html += `
+                    <div class="dll-node shrink-0 min-w-[100px] max-w-[130px] cursor-default"
+                         data-node-id="${escapeHtml(p.id_pasien)}">
+                        <div class="dll-node-header px-3 py-1.5 text-center">
+                            <p class="font-bold text-xs font-mono">${escapeHtml(p.id_pasien)}</p>
+                        </div>
+                        <div class="px-2.5 py-1.5 text-center">
+                            <p class="text-xs text-navy-700 font-medium truncate">${escapeHtml(p.nama)}</p>
+                            <p class="text-[10px] text-navy-400 truncate">${escapeHtml(p.diagnosa)}</p>
+                        </div>
+                    </div>`;
+
+                // Backward arrow (between nodes)
+                if (i < data.length - 1) {
+                    html += '<span class="shrink-0 text-navy-300 text-lg leading-none mx-0.5">←</span>';
+                }
+            });
+
+            // Arrow to TAIL
+            html += '<span class="shrink-0 text-gold-500 text-lg leading-none mx-0.5">→</span>';
+
+            // TAIL badge
+            html += '<span class="shrink-0 text-[10px] font-bold bg-gold-500 text-navy-950 px-2.5 py-1 rounded-full shadow-sm">TAIL</span>';
+
+            chain.innerHTML = html;
+            highlightActiveChainNode();
+        }
+
+        function highlightActiveChainNode() {
+            const activeId = document.getElementById('nav-id')?.textContent;
+            document.querySelectorAll('.dll-node').forEach(node => {
+                if (node.dataset.nodeId === activeId && activeId && activeId !== '—') {
+                    node.classList.add('active');
+                } else {
+                    node.classList.remove('active');
+                }
+            });
+        }
+
+        // ===================================================================
+        // API CALLS: NAVIGASI 2 ARAH
+        // ===================================================================
+        async function refreshNav() {
+            try {
+                const res  = await fetch('/api/navigate/current');
+                const json = await res.json();
+                updateNavUI(json);
+            } catch (err) {
+                console.error('refreshNav error:', err);
+            }
+        }
+
+        async function doNavigate(direction) {
+            try {
+                const res  = await fetch(`/api/navigate/${direction}`, { method: 'POST' });
+                const json = await res.json();
+                updateNavUI(json);
+            } catch (err) {
+                showToast('Error', 'Gagal menghubungi server.', 'error');
+            }
+        }
+
+        function updateNavUI(json) {
+            const navEmpty = document.getElementById('nav-empty');
+            const navData  = document.getElementById('nav-data');
+            const btnPrev  = document.getElementById('btn-prev');
+            const btnNext  = document.getElementById('btn-next');
+
+            if (!json.success || !json.data) {
+                navEmpty.classList.remove('hidden');
+                navData.classList.add('hidden');
+                btnPrev.disabled = true;
+                btnNext.disabled = true;
+                highlightActiveChainNode();
+                return;
+            }
+
+            navEmpty.classList.add('hidden');
+            navData.classList.remove('hidden');
+
+            document.getElementById('nav-id').textContent       = json.data.id_pasien;
+            document.getElementById('nav-nama').textContent     = json.data.nama;
+            document.getElementById('nav-usia').textContent     = json.data.usia + ' Tahun';
+            document.getElementById('nav-diagnosa').textContent = json.data.diagnosa;
+
+            btnPrev.disabled = !json.has_prev;
+            btnNext.disabled = !json.has_next;
+
+            highlightActiveChainNode();
+        }
+
+        // ===================================================================
+        // UTILITIES
+        // ===================================================================
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function refreshAll() {
+            refreshTable();
+            refreshNav();
+        }
+
+        // ===================================================================
+        // INIT: Load data on page ready
+        // ===================================================================
+        document.addEventListener('DOMContentLoaded', refreshAll);
+    </script>
+
+</body>
+</html>
