@@ -6,6 +6,12 @@
     "diagnosa": "Demam"
   },
   {
+    "id_pasien": "P003",
+    "nama": "Keysa",
+    "usia": 30,
+    "diagnosa": "Gerd"
+  },
+  {
     "id_pasien": "P002",
     "nama": "Vani",
     "usia": 21,
@@ -16,11 +22,5 @@
     "nama": "Abyan",
     "usia": 23,
     "diagnosa": "Cancer"
-  },
-  {
-    "id_pasien": "P003",
-    "nama": "Keysa",
-    "usia": 30,
-    "diagnosa": "Gerd"
   }
 ]

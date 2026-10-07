@@ -642,6 +642,62 @@ def api_insert_belakang():
     return jsonify(result), status
 
 
+@app.route("/api/move/tengah", methods=["POST"])
+def api_move_tengah():
+    """Pindahkan node yang SUDAH ADA ke posisi setelah node target (atomik: hapus + insert).
+    Digunakan pada alur Edit + Insert Tengah ketika id_pasien sudah terdaftar di DLL."""
+    data = request.get_json()
+    if not data:
+        return jsonify({"success": False, "message": "Request body kosong."}), 400
+
+    required = ["id_pasien", "nama", "usia", "diagnosa", "target_id"]
+    for field in required:
+        if field not in data or str(data[field]).strip() == "":
+            return jsonify({"success": False, "message": f"Field '{field}' wajib diisi."}), 400
+
+    try:
+        usia = int(data["usia"])
+    except (ValueError, TypeError):
+        return jsonify({"success": False, "message": "Usia harus berupa angka."}), 400
+
+    id_pasien  = str(data["id_pasien"]).strip()
+    nama       = str(data["nama"]).strip()
+    diagnosa   = str(data["diagnosa"]).strip()
+    target_id  = str(data["target_id"]).strip()
+
+    # Pastikan target berbeda dengan node itu sendiri
+    if id_pasien == target_id:
+        return jsonify({"success": False, "message": "ID Target tidak boleh sama dengan ID pasien yang dipindahkan."}), 400
+
+    # Cek node yang akan dipindahkan memang ada
+    if not dll._id_exists(id_pasien):
+        return jsonify({"success": False, "message": f"Pasien dengan ID '{id_pasien}' tidak ditemukan."}), 404
+
+    # Cek node target ada
+    if not dll._id_exists(target_id):
+        return jsonify({"success": False, "message": f"Node target dengan ID '{target_id}' tidak ditemukan."}), 404
+
+    # Langkah 1: Hapus node lama dari DLL
+    del_result = dll.hapus_by_id(id_pasien)
+    if not del_result["success"]:
+        return jsonify({"success": False, "message": f"Gagal menghapus node lama: {del_result['message']}"}), 500
+
+    # Langkah 2: Insert node baru setelah target
+    ins_result = dll.insert_tengah(
+        id_pasien=id_pasien,
+        nama=nama,
+        usia=usia,
+        diagnosa=diagnosa,
+        target_id=target_id,
+    )
+    if not ins_result["success"]:
+        # Rollback: kembalikan node ke belakang agar data tidak hilang
+        dll.insert_belakang(id_pasien=id_pasien, nama=nama, usia=usia, diagnosa=diagnosa)
+        return jsonify({"success": False, "message": f"Gagal menyisipkan node: {ins_result['message']} (node dikembalikan ke posisi belakang)"}), 409
+
+    return jsonify({"success": True, "message": f"Pasien '{nama}' (ID: {id_pasien}) berhasil dipindahkan setelah ID '{target_id}'."}), 200
+
+
 @app.route("/api/insert/tengah", methods=["POST"])
 def api_insert_tengah():
     """Insert node baru di tengah DLL (setelah node target)."""

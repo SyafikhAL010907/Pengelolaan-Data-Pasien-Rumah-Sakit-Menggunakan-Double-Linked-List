@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Sistem Pengelolaan Data Pasien — Double Linked List | UNJ</title>
-    <meta name="description" content="Aplikasi web HealthTech Universitas Negeri Jakarta untuk pengelolaan data pasien rumah sakit menggunakan struktur data Double Linked List." />
+    <meta name="description"
+        content="Aplikasi web HealthTech Universitas Negeri Jakarta untuk pengelolaan data pasien rumah sakit menggunakan struktur data Double Linked List." />
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -14,7 +16,7 @@
                 extend: {
                     colors: {
                         navy: {
-                            50:  '#f0f3f9',
+                            50: '#f0f3f9',
                             100: '#dce3f0',
                             200: '#b9c7e1',
                             300: '#8da4cc',
@@ -27,7 +29,7 @@
                             950: '#080e1c',
                         },
                         gold: {
-                            50:  '#fefbf0',
+                            50: '#fefbf0',
                             100: '#fcf3d4',
                             200: '#f8e5a4',
                             300: '#f2d06a',
@@ -36,7 +38,7 @@
                             600: '#b38412',
                         },
                         cream: {
-                            50:  '#fdfcfa',
+                            50: '#fdfcfa',
                             100: '#faf7f2',
                             200: '#f4f0e6',
                             300: '#ede7d8',
@@ -54,11 +56,18 @@
     <!-- Google Fonts: Inter + JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap"
+        rel="stylesheet" />
 
     <style>
         /* =========== Base =========== */
-        *, *::before, *::after { box-sizing: border-box; }
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
         body {
             position: relative;
             min-height: 100vh;
@@ -71,7 +80,10 @@
         body::before {
             content: '';
             position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             background-image: url("{{ url_for('static', filename='Batik.png') }}");
             background-repeat: repeat;
             background-size: 500px auto;
@@ -82,26 +94,58 @@
         }
 
         /* Ensure content sits above the batik */
-        header, main, footer, #toast {
+        header,
+        main,
+        footer,
+        #toast {
             position: relative;
             z-index: 1;
         }
 
         /* =========== Animations =========== */
         @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(12px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-8px); }
-            to   { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
-        .animate-fade-in-up { animation: fadeInUp .45s cubic-bezier(0.16, 1, 0.3, 1) both; }
-        .anim-delay-1 { animation-delay: .08s; }
-        .anim-delay-2 { animation-delay: .16s; }
-        .anim-delay-3 { animation-delay: .24s; }
-        .animate-slide-down { animation: slideDown .3s ease-out both; }
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade-in-up {
+            animation: fadeInUp .45s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .anim-delay-1 {
+            animation-delay: .08s;
+        }
+
+        .anim-delay-2 {
+            animation-delay: .16s;
+        }
+
+        .anim-delay-3 {
+            animation-delay: .24s;
+        }
+
+        .animate-slide-down {
+            animation: slideDown .3s ease-out both;
+        }
 
         /* =========== Toast =========== */
         #toast {
@@ -114,17 +158,29 @@
             pointer-events: none;
             z-index: 9999;
         }
-        #toast.show  { transform: translate(-50%, -50%) scale(1); opacity: 1; pointer-events: auto; }
-        #toast.hide  { transform: translate(-50%, -50%) scale(0.85); opacity: 0; pointer-events: none; }
+
+        #toast.show {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        #toast.hide {
+            transform: translate(-50%, -50%) scale(0.85);
+            opacity: 0;
+            pointer-events: none;
+        }
 
         /* =========== Buttons =========== */
         .btn-action {
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
         .btn-action:hover {
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(15,27,51,0.15);
+            box-shadow: 0 4px 12px rgba(15, 27, 51, 0.15);
         }
+
         .btn-action:active {
             transform: translateY(0) scale(0.98);
         }
@@ -133,9 +189,10 @@
         .input-field {
             transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
         }
+
         .input-field:focus {
             border-color: #2d4578;
-            box-shadow: 0 0 0 3px rgba(45,69,120,0.1);
+            box-shadow: 0 0 0 3px rgba(45, 69, 120, 0.1);
             background-color: #fff;
         }
 
@@ -143,8 +200,9 @@
         .table-row {
             transition: background-color 0.15s ease;
         }
+
         .table-row:hover {
-            background-color: rgba(45,69,120,0.04);
+            background-color: rgba(45, 69, 120, 0.04);
         }
 
         /* =========== Section Card =========== */
@@ -153,8 +211,9 @@
             border: 1px solid #ede7d8;
             border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 1px 3px rgba(15,27,51,0.06);
+            box-shadow: 0 1px 3px rgba(15, 27, 51, 0.06);
         }
+
         .section-header {
             background-color: #0f1b33;
             padding: 14px 20px;
@@ -169,25 +228,31 @@
             background: #ffffff;
             transition: all 0.2s ease;
         }
+
         .dll-node:hover {
             border-color: #b9c7e1;
-            box-shadow: 0 2px 8px rgba(15,27,51,0.08);
+            box-shadow: 0 2px 8px rgba(15, 27, 51, 0.08);
         }
+
         .dll-node.active {
             border-color: #2563eb;
-            box-shadow: 0 2px 12px rgba(37,99,235,0.18);
+            box-shadow: 0 2px 12px rgba(37, 99, 235, 0.18);
         }
+
         .dll-node .dll-node-header {
             background-color: #dce3f0;
             border-bottom: 1px solid #ede7d8;
         }
+
         .dll-node.active .dll-node-header {
             background-color: #1e3a8a;
             border-bottom-color: #1e3a8a;
         }
+
         .dll-node .dll-node-header p {
             color: #0f1b33;
         }
+
         .dll-node.active .dll-node-header p {
             color: #ffffff;
         }
@@ -199,73 +264,84 @@
         }
 
         /* =========== Scrollbar =========== */
-        ::-webkit-scrollbar { width: 5px; height: 5px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #b9c7e1; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #8da4cc; }
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #b9c7e1;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #8da4cc;
+        }
 
         /* =========== Responsive Table =========== */
         @media (max-width: 640px) {
-            .resp-table { font-size: 12px; }
-            .resp-table th, .resp-table td { padding: 8px 10px; }
+            .resp-table {
+                font-size: 12px;
+            }
+
+            .resp-table th,
+            .resp-table td {
+                padding: 8px 10px;
+            }
         }
     </style>
 </head>
 
 <body class="min-h-screen antialiased pb-8">
 
-<!-- ======================== HEADER ======================== -->
-<header class="bg-navy-900 relative overflow-hidden">
+    <!-- ======================== HEADER ======================== -->
+    <header class="bg-navy-900 relative overflow-hidden">
 
-    <!-- Batik Corner: Kiri Atas -->
- <img src="{{ url_for('static', filename='batik-kiri-atas.png') }}"
-     alt=""
-     class="absolute
+        <!-- Batik Corner: Kiri Atas -->
+        <img src="{{ url_for('static', filename='batik-kiri-atas.png') }}" alt="" class="absolute
             -bottom-3 -left-4
             sm:-top-3 sm:-left-4
             sm:bottom-auto
             w-24 sm:w-36
             pointer-events-none
-            select-none"
-     style="opacity: 0.65; z-index: 0;" />
+            select-none" style="opacity: 0.65; z-index: 0;" />
 
-    <!-- Batik Corner: Kanan Bawah -->
-    <img src="{{ url_for('static', filename='batik-kanan-bawah.png') }}"
-     alt=""
-     class="absolute
+        <!-- Batik Corner: Kanan Bawah -->
+        <img src="{{ url_for('static', filename='batik-kanan-bawah.png') }}" alt="" class="absolute
             -top-2 -right-5
             sm:-bottom-2 sm:-right-5
             sm:top-auto
             w-[104px] sm:w-[152px]
             pointer-events-none
-            select-none"
-     style="opacity: 0.65; z-index: 0;" />
+            select-none" style="opacity: 0.65; z-index: 0;" />
 
 
-    <!-- =====================================================
+        <!-- =====================================================
          1. BATIK GARIS KIRI
          DESKTOP TETAP PERSIS
     ====================================================== -->
-    <img src="{{ url_for('static', filename='batikgariskiri.png') }}"
-         alt="Ornamen Batik Kiri"
-         class="hidden xl:block absolute left-60 2xl:left-72 top-1/2 transform -translate-y-1/2 h-8 lg:h-10 object-contain opacity-80 mix-blend-screen pointer-events-none"
-         style="z-index: 1;" />
+        <img src="{{ url_for('static', filename='batikgariskiri.png') }}" alt="Ornamen Batik Kiri"
+            class="hidden xl:block absolute left-60 2xl:left-72 top-1/2 transform -translate-y-1/2 h-8 lg:h-10 object-contain opacity-80 mix-blend-screen pointer-events-none"
+            style="z-index: 1;" />
 
 
-    <!-- =====================================================
+        <!-- =====================================================
          2. BATIK GARIS KANAN
          DESKTOP TETAP PERSIS
     ====================================================== -->
-    <img src="{{ url_for('static', filename='batikgariskanan.png') }}"
-         alt="Ornamen Batik Kanan"
-         class="hidden xl:block absolute right-60 2xl:right-72 top-1/2 transform -translate-y-1/2 h-8 lg:h-10 object-contain opacity-80 mix-blend-screen pointer-events-none"
-         style="z-index: 1;" />
+        <img src="{{ url_for('static', filename='batikgariskanan.png') }}" alt="Ornamen Batik Kanan"
+            class="hidden xl:block absolute right-60 2xl:right-72 top-1/2 transform -translate-y-1/2 h-8 lg:h-10 object-contain opacity-80 mix-blend-screen pointer-events-none"
+            style="z-index: 1;" />
 
 
-    <!-- =====================================================
+        <!-- =====================================================
          3. CONTAINER UTAMA
     ====================================================== -->
-    <div class="
+        <div class="
         w-full
         mx-auto
         px-4
@@ -273,14 +349,13 @@
         relative
         flex
         justify-center
-    "
-    style="z-index: 2;">
+    " style="z-index: 2;">
 
-        <!--
+            <!--
             MOBILE  : LOGO DI ATAS, TEXT DI BAWAH
             DESKTOP : LOGO + TEXT SEJAJAR
         -->
-        <div class="
+            <div class="
             flex
             flex-col
             md:flex-row
@@ -294,10 +369,8 @@
             py-2
         ">
 
-            <!-- Logo UNJ -->
-            <img src="{{ url_for('static', filename='unj.png') }}"
-                 alt="Logo Universitas Negeri Jakarta"
-                 class="
+                <!-- Logo UNJ -->
+                <img src="{{ url_for('static', filename='unj.png') }}" alt="Logo Universitas Negeri Jakarta" class="
                     w-16
                     h-16
                     sm:w-20
@@ -306,11 +379,11 @@
                     shrink-0
                  " />
 
-            <!-- Text -->
-            <div class="min-w-0">
+                <!-- Text -->
+                <div class="min-w-0">
 
-                <!-- Universitas -->
-                <p class="
+                    <!-- Universitas -->
+                    <p class="
                     text-gold-400
                     text-xs
                     sm:text-sm
@@ -319,11 +392,11 @@
                     uppercase
                     mb-1
                 ">
-                    Universitas Negeri Jakarta
-                </p>
+                        Universitas Negeri Jakarta
+                    </p>
 
-                <!-- Judul -->
-                <h1 class="
+                    <!-- Judul -->
+                    <h1 class="
                     text-white
                     text-lg
                     sm:text-xl
@@ -334,11 +407,11 @@
                     whitespace-normal
                     md:whitespace-nowrap
                 ">
-                    Sistem Pengelolaan Data Pasien
-                </h1>
+                        Sistem Pengelolaan Data Pasien
+                    </h1>
 
-                <!-- Subtitle -->
-                <p class="
+                    <!-- Subtitle -->
+                    <p class="
                     text-navy-300
                     text-[10px]
                     sm:text-xs
@@ -347,29 +420,33 @@
                     mt-1.5
                     leading-tight
                 ">
-                    Double Linked List — HealthTech In-Memory Architecture
-                </p>
+                        Double Linked List — HealthTech In-Memory Architecture
+                    </p>
+
+                </div>
 
             </div>
-
         </div>
-    </div>
 
-    <!-- Gold accent line -->
-    <div class="gold-line"></div>
+        <!-- Gold accent line -->
+        <div class="gold-line"></div>
 
-</header>
+    </header>
 
     <!-- ======================== TOAST NOTIFICATION ======================== -->
-    <div id="toast-overlay" class="fixed inset-0 bg-navy-900/50 backdrop-blur-sm z-9998 hidden transition-opacity duration-300 opacity-0"></div>
-    <div id="toast" class="hide flex flex-col items-center justify-center text-center gap-3 border border-cream-200 shadow-2xl bg-white rounded-2xl p-6 sm:p-8 max-w-sm w-[90%] sm:w-full"
-         role="alert" aria-live="assertive">
+    <div id="toast-overlay"
+        class="fixed inset-0 bg-navy-900/50 backdrop-blur-sm z-9998 hidden transition-opacity duration-300 opacity-0">
+    </div>
+    <div id="toast"
+        class="hide flex flex-col items-center justify-center text-center gap-3 border border-cream-200 shadow-2xl bg-white rounded-2xl p-6 sm:p-8 max-w-sm w-[90%] sm:w-full"
+        role="alert" aria-live="assertive">
         <div id="toast-icon" class="shrink-0 mb-1"></div>
         <div class="flex-1 w-full">
             <p id="toast-title" class="font-extrabold text-xl"></p>
             <p id="toast-msg" class="text-sm mt-1 text-gray-700"></p>
         </div>
-        <button onclick="hideToast()" class="mt-3 btn-action bg-navy-900 text-white font-bold py-2.5 px-8 rounded-lg hover:bg-navy-800 transition-colors w-full sm:w-auto">
+        <button onclick="hideToast()"
+            class="mt-3 btn-action bg-navy-900 text-white font-bold py-2.5 px-8 rounded-lg hover:bg-navy-800 transition-colors w-full sm:w-auto">
             OK, Mengerti
         </button>
     </div>
@@ -383,57 +460,73 @@
                 <div class="p-5 sm:p-6">
                     <!-- Title Row -->
                     <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-4">
-                        <div class="shrink-0 w-12 h-12 bg-navy-900 rounded-full flex items-center justify-center shadow-sm">
-                            <svg class="w-5 h-5 text-gold-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                        <div
+                            class="shrink-0 w-12 h-12 bg-navy-900 rounded-full flex items-center justify-center shadow-sm">
+                            <svg class="w-5 h-5 text-gold-400" fill="none" stroke="currentColor" stroke-width="2.5"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
                             </svg>
                         </div>
                         <div>
                             <h2 class="text-lg font-bold text-navy-900 tracking-tight">Cari Pasien</h2>
-                            <p class="text-navy-400 text-sm font-medium">Traversal pencarian node DLL berdasarkan ID atau Nama</p>
+                            <p class="text-navy-400 text-sm font-medium">Traversal pencarian node DLL berdasarkan ID
+                                atau Nama</p>
                         </div>
                     </div>
 
                     <!-- Search Form -->
                     <div class="flex flex-col sm:flex-row gap-3">
                         <input id="input-search-query" type="text" placeholder="Masukkan ID (contoh: P001) atau Nama..."
-                               class="input-field flex-1 border border-cream-300 bg-cream-50 rounded-md px-4 py-2.5 text-sm text-navy-900 placeholder-navy-300 font-medium focus:outline-none" />
-                        
+                            class="input-field flex-1 border border-cream-300 bg-cream-50 rounded-md px-4 py-2.5 text-sm text-navy-900 placeholder-navy-300 font-medium focus:outline-none" />
+
                         <button onclick="doCariByID(this)"
-                                class="btn-action bg-navy-900 hover:bg-navy-800 text-white text-sm font-semibold px-4 py-2.5 rounded-md shrink-0 flex items-center justify-center gap-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                            class="btn-action bg-navy-900 hover:bg-navy-800 text-white text-sm font-semibold px-4 py-2.5 rounded-md shrink-0 flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
                             </svg>
                             Cari by ID
                         </button>
                         <button onclick="doCariByNama(this)"
-                                class="btn-action bg-gold-600 hover:bg-gold-700 text-navy-950 text-sm font-semibold px-4 py-2.5 rounded-md shrink-0 flex items-center justify-center gap-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                            class="btn-action bg-gold-600 hover:bg-gold-700 text-navy-950 text-sm font-semibold px-4 py-2.5 rounded-md shrink-0 flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
                             </svg>
                             Cari by Nama
                         </button>
                     </div>
 
                     <!-- Result Box (ID) -->
-                    <div id="search-result" class="hidden animate-slide-down mt-4 bg-cream-100 border border-gold-200 rounded-md p-4">
+                    <div id="search-result"
+                        class="hidden animate-slide-down mt-4 bg-cream-100 border border-gold-200 rounded-md p-4">
                         <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                             <div class="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-2 flex-1 text-sm">
                                 <div>
-                                    <span class="text-navy-400 text-[10px] block uppercase tracking-wider font-semibold">ID Pasien</span>
+                                    <span
+                                        class="text-navy-400 text-[10px] block uppercase tracking-wider font-semibold">ID
+                                        Pasien</span>
                                     <strong id="search-res-id" class="text-navy-900 font-mono font-bold">—</strong>
                                 </div>
                                 <div>
-                                    <span class="text-navy-400 text-[10px] block uppercase tracking-wider font-semibold">Nama</span>
-                                    <strong id="search-res-nama" class="text-navy-900 font-bold truncate block">—</strong>
+                                    <span
+                                        class="text-navy-400 text-[10px] block uppercase tracking-wider font-semibold">Nama</span>
+                                    <strong id="search-res-nama"
+                                        class="text-navy-900 font-bold truncate block">—</strong>
                                 </div>
                                 <div>
-                                    <span class="text-navy-400 text-[10px] block uppercase tracking-wider font-semibold">Usia</span>
+                                    <span
+                                        class="text-navy-400 text-[10px] block uppercase tracking-wider font-semibold">Usia</span>
                                     <strong id="search-res-usia" class="text-navy-900 font-bold">—</strong>
                                 </div>
                                 <div>
-                                    <span class="text-navy-400 text-[10px] block uppercase tracking-wider font-semibold">Diagnosa</span>
-                                    <strong id="search-res-diagnosa" class="text-navy-900 font-bold truncate block">—</strong>
+                                    <span
+                                        class="text-navy-400 text-[10px] block uppercase tracking-wider font-semibold">Diagnosa</span>
+                                    <strong id="search-res-diagnosa"
+                                        class="text-navy-900 font-bold truncate block">—</strong>
                                 </div>
                             </div>
                         </div>
@@ -458,105 +551,125 @@
                 <section class="animate-fade-in-up anim-delay-1">
                     <div class="section-card h-full">
                         <div class="section-header">
-                        <h2 class="text-white text-sm font-bold flex items-center gap-2">
-                            <svg class="w-4 h-4 text-gold-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                            </svg>
-                            Form Operations Pasien
-                        </h2>
-                        <p class="text-navy-400 text-[10px] font-medium mt-0.5">Input & hapus data node DLL</p>
-                    </div>
-
-                    <div class="p-5 space-y-4">
-                        <!-- Input Fields -->
-                        <div class="space-y-3">
-                            <div>
-                                <label for="input-id" class="block text-[11px] font-semibold text-navy-500 uppercase tracking-wider mb-1">ID Pasien</label>
-                                <input id="input-id" type="text" placeholder="Contoh: P001"
-                                       class="input-field w-full border border-cream-300 bg-cream-50 rounded-md px-3.5 py-2 text-sm text-navy-900 placeholder-navy-300 font-medium focus:outline-none" />
-                            </div>
-                            <div>
-                                <label for="input-nama" class="block text-[11px] font-semibold text-navy-500 uppercase tracking-wider mb-1">Nama Pasien</label>
-                                <input id="input-nama" type="text" placeholder="Nama lengkap pasien"
-                                       class="input-field w-full border border-cream-300 bg-cream-50 rounded-md px-3.5 py-2 text-sm text-navy-900 placeholder-navy-300 font-medium focus:outline-none" />
-                            </div>
-                            <div>
-                                <label for="input-usia" class="block text-[11px] font-semibold text-navy-500 uppercase tracking-wider mb-1">Usia (Tahun)</label>
-                                <input id="input-usia" type="number" min="0" max="150" placeholder="Contoh: 35"
-                                       class="input-field w-full border border-cream-300 bg-cream-50 rounded-md px-3.5 py-2 text-sm text-navy-900 placeholder-navy-300 font-medium focus:outline-none" />
-                            </div>
-                            <div>
-                                <label for="input-diagnosa" class="block text-[11px] font-semibold text-navy-500 uppercase tracking-wider mb-1">Diagnosa Medis</label>
-                                <input id="input-diagnosa" type="text" placeholder="Hasil diagnosa medis"
-                                       class="input-field w-full border border-cream-300 bg-cream-50 rounded-md px-3.5 py-2 text-sm text-navy-900 placeholder-navy-300 font-medium focus:outline-none" />
-                            </div>
-                            <div id="target-id-group" class="hidden animate-slide-down bg-gold-50 p-3.5 rounded-md border border-gold-300">
-                                <label for="input-target" class="block text-[11px] font-semibold text-navy-600 uppercase tracking-wider mb-1">ID Target (Insert Setelah)</label>
-                                <input id="input-target" type="text" placeholder="Masukkan ID pasien acuan"
-                                       class="input-field w-full border border-gold-300 bg-white rounded-md px-3.5 py-2 text-sm text-navy-900 placeholder-navy-300 font-medium focus:outline-none" />
-                            </div>
+                            <h2 class="text-white text-sm font-bold flex items-center gap-2">
+                                <svg class="w-4 h-4 text-gold-400" fill="none" stroke="currentColor" stroke-width="2.5"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                </svg>
+                                Form Operations Pasien
+                            </h2>
+                            <p class="text-navy-400 text-[10px] font-medium mt-0.5">Input & hapus data node DLL</p>
                         </div>
 
-                        <!-- Divider -->
-                        <div class="relative py-1">
-                            <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-cream-300"></div></div>
-                            <div class="relative flex justify-center">
-                                <span class="bg-white px-3 text-[10px] font-bold text-navy-400 uppercase tracking-widest">Aksi Node</span>
+                        <div class="p-5 space-y-4">
+                            <!-- Input Fields -->
+                            <div class="space-y-3">
+                                <div>
+                                    <label for="input-id"
+                                        class="block text-[11px] font-semibold text-navy-500 uppercase tracking-wider mb-1">ID
+                                        Pasien</label>
+                                    <input id="input-id" type="text" placeholder="Contoh: P001"
+                                        class="input-field w-full border border-cream-300 bg-cream-50 rounded-md px-3.5 py-2 text-sm text-navy-900 placeholder-navy-300 font-medium focus:outline-none" />
+                                </div>
+                                <div>
+                                    <label for="input-nama"
+                                        class="block text-[11px] font-semibold text-navy-500 uppercase tracking-wider mb-1">Nama
+                                        Pasien</label>
+                                    <input id="input-nama" type="text" placeholder="Nama lengkap pasien"
+                                        class="input-field w-full border border-cream-300 bg-cream-50 rounded-md px-3.5 py-2 text-sm text-navy-900 placeholder-navy-300 font-medium focus:outline-none" />
+                                </div>
+                                <div>
+                                    <label for="input-usia"
+                                        class="block text-[11px] font-semibold text-navy-500 uppercase tracking-wider mb-1">Usia
+                                        (Tahun)</label>
+                                    <input id="input-usia" type="number" min="0" max="150" placeholder="Contoh: 35"
+                                        class="input-field w-full border border-cream-300 bg-cream-50 rounded-md px-3.5 py-2 text-sm text-navy-900 placeholder-navy-300 font-medium focus:outline-none" />
+                                </div>
+                                <div>
+                                    <label for="input-diagnosa"
+                                        class="block text-[11px] font-semibold text-navy-500 uppercase tracking-wider mb-1">Diagnosa
+                                        Medis</label>
+                                    <input id="input-diagnosa" type="text" placeholder="Hasil diagnosa medis"
+                                        class="input-field w-full border border-cream-300 bg-cream-50 rounded-md px-3.5 py-2 text-sm text-navy-900 placeholder-navy-300 font-medium focus:outline-none" />
+                                </div>
+                                <div id="target-id-group"
+                                    class="hidden animate-slide-down bg-gold-50 p-3.5 rounded-md border border-gold-300">
+                                    <label for="input-target"
+                                        class="block text-[11px] font-semibold text-navy-600 uppercase tracking-wider mb-1">ID
+                                        Target (Insert Setelah)</label>
+                                    <input id="input-target" type="text" placeholder="Masukkan ID pasien acuan"
+                                        class="input-field w-full border border-gold-300 bg-white rounded-md px-3.5 py-2 text-sm text-navy-900 placeholder-navy-300 font-medium focus:outline-none" />
+                                </div>
                             </div>
-                        </div>
 
-                        <!-- Insert & Update Actions -->
-                        <div class="space-y-2">
-                            <p class="text-[11px] font-semibold text-navy-500 uppercase tracking-wider">Penyisipan & Pembaruan</p>
-                            <div class="grid grid-cols-2 gap-2">
-                                <button onclick="doInsert('depan', this)"
+                            <!-- Divider -->
+                            <div class="relative py-1">
+                                <div class="absolute inset-0 flex items-center">
+                                    <div class="w-full border-t border-cream-300"></div>
+                                </div>
+                                <div class="relative flex justify-center">
+                                    <span
+                                        class="bg-white px-3 text-[10px] font-bold text-navy-400 uppercase tracking-widest">Aksi
+                                        Node</span>
+                                </div>
+                            </div>
+
+                            <!-- Insert & Update Actions -->
+                            <div class="space-y-2">
+                                <p class="text-[11px] font-semibold text-navy-500 uppercase tracking-wider">Penyisipan &
+                                    Pembaruan</p>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <button onclick="doInsert('depan', this)"
                                         class="btn-action bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold py-2.5 px-2 rounded-md flex items-center justify-center gap-1">
-                                    + Depan
-                                </button>
-                                <button onclick="showTargetAndInsert(this)"
+                                        + Depan
+                                    </button>
+                                    <button id="btn-tengah" onclick="showTargetAndInsert()"
                                         class="btn-action bg-navy-500 hover:bg-navy-600 text-white text-[11px] font-bold py-2.5 px-2 rounded-md flex items-center justify-center gap-1">
-                                    ◆ Tengah
-                                </button>
-                                <button onclick="doInsert('belakang', this)"
+                                        ◆ Tengah
+                                    </button>
+                                    <button onclick="doInsert('belakang', this)"
                                         class="btn-action bg-gold-500 hover:bg-gold-600 text-navy-950 text-[11px] font-bold py-2.5 px-2 rounded-md flex items-center justify-center gap-1">
-                                    ◆ Belakang
-                                </button>
-                                <button onclick="doUpdatePasien(this)"
+                                        ◆ Belakang
+                                    </button>
+                                    <button onclick="doUpdatePasien(this)"
                                         class="btn-action bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold py-2.5 px-2 rounded-md flex items-center justify-center gap-1">
-                                    ✎ Update
-                                </button>
+                                        ✎ Update
+                                    </button>
+                                </div>
                             </div>
-                        </div>
 
-                        <!-- Delete Actions -->
-                        <div class="space-y-2">
-                            <p class="text-[11px] font-semibold text-navy-500 uppercase tracking-wider">Operasi Penghapusan (Delete)</p>
-                            <div class="grid grid-cols-2 gap-2">
-                                <button onclick="doHapus('depan', this)"
+                            <!-- Delete Actions -->
+                            <div class="space-y-2">
+                                <p class="text-[11px] font-semibold text-navy-500 uppercase tracking-wider">Operasi
+                                    Penghapusan (Delete)</p>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <button onclick="doHapus('depan', this)"
                                         class="btn-action bg-red-600 hover:bg-red-700 text-white text-[11px] font-bold py-2.5 px-2 rounded-md flex items-center justify-center gap-1">
-                                    × Depan
-                                </button>
-                                <button onclick="doHapus('belakang', this)"
+                                        × Depan
+                                    </button>
+                                    <button onclick="doHapus('belakang', this)"
                                         class="btn-action bg-red-600 hover:bg-red-700 text-white text-[11px] font-bold py-2.5 px-2 rounded-md flex items-center justify-center gap-1">
-                                    × Belakang
-                                </button>
-                                <button onclick="doHapusByID(this)"
+                                        × Belakang
+                                    </button>
+                                    <button onclick="doHapusByID(this)"
                                         class="btn-action bg-red-600 hover:bg-red-700 text-white text-[11px] font-bold py-2.5 px-2 rounded-md flex items-center justify-center gap-1">
-                                    × By ID
-                                </button>
-                                <button onclick="doHapusByNama(this)"
+                                        × By ID
+                                    </button>
+                                    <button onclick="doHapusByNama(this)"
                                         class="btn-action bg-red-600 hover:bg-red-700 text-white text-[11px] font-bold py-2.5 px-2 rounded-md flex items-center justify-center gap-1">
-                                    × By Nama
-                                </button>
+                                        × By Nama
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </section>
+                </section>
 
 
-        </div><!-- /left column -->
+            </div><!-- /left column -->
 
             <!-- ==================================================
                  RIGHT COLUMN: TABLE & NAVIGATOR
@@ -569,8 +682,10 @@
                         <div class="section-header flex items-center justify-between">
                             <div>
                                 <h2 class="text-white text-sm font-bold flex items-center gap-2">
-                                    <svg class="w-4 h-4 text-gold-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 0 1-1.125-1.125M3.375 19.5h7.5c.621 0 1.125-.504 1.125-1.125m-9.75 0V5.625m0 12.75v-1.5c0-.621.504-1.125 1.125-1.125m18.375 2.625V5.625m0 12.75c0 .621-.504 1.125-1.125 1.125m1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125m0 3.75h-7.5A1.125 1.125 0 0 1 12 18.375m9.75-12.75c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125m19.5 0v1.5c0 .621-.504 1.125-1.125 1.125M2.25 5.625v1.5c0 .621.504 1.125 1.125 1.125m0 0h17.25m-17.25 0h7.5c.621 0 1.125.504 1.125 1.125M3.375 8.25c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125m17.25-3.75h-7.5c-.621 0-1.125.504-1.125 1.125m8.625-1.125c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125m-17.25 0h7.5m-7.5 0c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125M12 10.875v-1.5m0 1.5c0 .621-.504 1.125-1.125 1.125M12 10.875c0 .621.504 1.125 1.125 1.125m-2.25 0c.621 0 1.125.504 1.125 1.125M13.125 12h7.5m-7.5 0c-.621 0-1.125.504-1.125 1.125M20.625 12c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125m-17.25 0h7.5M12 14.625v-1.5m0 1.5c0 .621-.504 1.125-1.125 1.125M12 14.625c0 .621.504 1.125 1.125 1.125m-2.25 0c.621 0 1.125.504 1.125 1.125m0 0v.375" />
+                                    <svg class="w-4 h-4 text-gold-400" fill="none" stroke="currentColor"
+                                        stroke-width="2.5" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 0 1-1.125-1.125M3.375 19.5h7.5c.621 0 1.125-.504 1.125-1.125m-9.75 0V5.625m0 12.75v-1.5c0-.621.504-1.125 1.125-1.125m18.375 2.625V5.625m0 12.75c0 .621-.504 1.125-1.125 1.125m1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125m0 3.75h-7.5A1.125 1.125 0 0 1 12 18.375m9.75-12.75c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125m19.5 0v1.5c0 .621-.504 1.125-1.125 1.125M2.25 5.625v1.5c0 .621.504 1.125 1.125 1.125m0 0h17.25m-17.25 0h7.5c.621 0 1.125.504 1.125 1.125M3.375 8.25c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125m17.25-3.75h-7.5c-.621 0-1.125.504-1.125 1.125m8.625-1.125c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125m-17.25 0h7.5m-7.5 0c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125M12 10.875v-1.5m0 1.5c0 .621-.504 1.125-1.125 1.125M12 10.875c0 .621.504 1.125 1.125 1.125m-2.25 0c.621 0 1.125.504 1.125 1.125M13.125 12h7.5m-7.5 0c-.621 0-1.125.504-1.125 1.125M20.625 12c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125m-17.25 0h7.5M12 14.625v-1.5m0 1.5c0 .621-.504 1.125-1.125 1.125M12 14.625c0 .621.504 1.125 1.125 1.125m-2.25 0c.621 0 1.125.504 1.125 1.125m0 0v.375" />
                                     </svg>
                                     Data Seluruh Pasien
                                 </h2>
@@ -578,23 +693,36 @@
                             </div>
                             <div class="flex items-center gap-3">
                                 <button onclick="doBackup(this)"
-                                        class="btn-action bg-navy-700 hover:bg-navy-600 text-white text-[11px] font-bold px-3 py-1.5 rounded flex items-center gap-1.5" title="Backup Data">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z"/></svg>
+                                    class="btn-action bg-navy-700 hover:bg-navy-600 text-white text-[11px] font-bold px-3 py-1.5 rounded flex items-center gap-1.5"
+                                    title="Backup Data">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" />
+                                    </svg>
                                     Backup
                                 </button>
                                 <button onclick="doRestore(this)"
-                                        class="btn-action bg-gold-600 hover:bg-gold-500 text-navy-950 text-[11px] font-bold px-3 py-1.5 rounded flex items-center gap-1.5" title="Restore Data">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+                                    class="btn-action bg-gold-600 hover:bg-gold-500 text-navy-950 text-[11px] font-bold px-3 py-1.5 rounded flex items-center gap-1.5"
+                                    title="Restore Data">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                                    </svg>
                                     Restore
                                 </button>
                                 <button onclick="doSortByNama(this)"
-                                        class="btn-action bg-navy-800 hover:bg-navy-700 text-white text-[11px] font-bold px-3 py-1.5 rounded flex items-center gap-1.5">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 7.5L7.5 3m0 0L12 7.5M7.5 3v13.5m13.5 0L16.5 21m0 0L12 16.5m4.5 4.5V7.5" />
+                                    class="btn-action bg-navy-800 hover:bg-navy-700 text-white text-[11px] font-bold px-3 py-1.5 rounded flex items-center gap-1.5">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M3 7.5L7.5 3m0 0L12 7.5M7.5 3v13.5m13.5 0L16.5 21m0 0L12 16.5m4.5 4.5V7.5" />
                                     </svg>
                                     Sort A-Z
                                 </button>
-                                <span id="badge-count" class="text-gold-400 text-[11px] font-bold border border-gold-500/30 px-2.5 py-1 rounded">
+                                <span id="badge-count"
+                                    class="text-gold-400 text-[11px] font-bold border border-gold-500/30 px-2.5 py-1 rounded">
                                     0 pasien
                                 </span>
                             </div>
@@ -604,7 +732,8 @@
                         <div class="overflow-x-auto">
                             <table class="w-full text-sm text-left resp-table">
                                 <thead>
-                                    <tr class="bg-navy-900 text-navy-200 text-[11px] font-semibold uppercase tracking-wider">
+                                    <tr
+                                        class="bg-navy-900 text-navy-200 text-[11px] font-semibold uppercase tracking-wider">
                                         <th class="px-4 py-3">No</th>
                                         <th class="px-4 py-3">ID Pasien</th>
                                         <th class="px-4 py-3">Nama Pasien</th>
@@ -621,13 +750,17 @@
 
                             <!-- Empty Table State -->
                             <div id="empty-table" class="hidden text-center py-10 px-4">
-                                <div class="w-12 h-12 mx-auto bg-cream-200 rounded-full flex items-center justify-center mb-3">
-                                    <svg class="w-6 h-6 text-navy-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0-3-3m3 3 3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
+                                <div
+                                    class="w-12 h-12 mx-auto bg-cream-200 rounded-full flex items-center justify-center mb-3">
+                                    <svg class="w-6 h-6 text-navy-400" fill="none" stroke="currentColor"
+                                        stroke-width="1.8" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M20.25 7.5l-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0-3-3m3 3 3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
                                     </svg>
                                 </div>
                                 <p class="text-navy-800 font-bold text-sm">Belum Ada Data Pasien</p>
-                                <p class="text-navy-400 text-xs mt-1">Gunakan Form Operations untuk menambahkan pasien baru.</p>
+                                <p class="text-navy-400 text-xs mt-1">Gunakan Form Operations untuk menambahkan pasien
+                                    baru.</p>
                             </div>
                         </div>
                     </div>
@@ -638,17 +771,21 @@
                     <div class="section-card relative overflow-hidden">
                         <div class="section-header relative" style="z-index: 1;">
                             <h2 class="text-white text-sm font-bold flex items-center gap-2">
-                                <svg class="w-4 h-4 text-gold-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
+                                <svg class="w-4 h-4 text-gold-400" fill="none" stroke="currentColor" stroke-width="2.5"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
                                 </svg>
                                 Navigasi 2 Arah (Prev / Next Pointer)
                             </h2>
-                            <p class="text-navy-400 text-[10px] font-medium mt-0.5">Penelusuran interaktif node Double Linked List</p>
+                            <p class="text-navy-400 text-[10px] font-medium mt-0.5">Penelusuran interaktif node Double
+                                Linked List</p>
                         </div>
 
                         <div class="p-5 space-y-4 relative" style="z-index: 1;">
                             <!-- DLL Chain Visualization -->
-                            <div id="dll-chain" class="flex items-center justify-start gap-2 overflow-x-auto py-4 px-6 select-none">
+                            <div id="dll-chain"
+                                class="flex items-center justify-start gap-2 overflow-x-auto py-4 px-6 select-none">
                                 <p class="text-navy-400 text-sm italic">Belum ada node dalam Linked List</p>
                             </div>
 
@@ -664,22 +801,27 @@
                             </div>
 
                             <!-- Prev / Next Navigation -->
-                            <div id="nav-content" class="flex items-center justify-between gap-4 pt-2 border-t border-cream-300">
+                            <div id="nav-content"
+                                class="flex items-center justify-between gap-4 pt-2 border-t border-cream-300">
                                 <button id="btn-prev" onclick="doNavigate('prev')"
-                                        class="btn-action bg-cream-200 hover:bg-cream-300 text-navy-700 font-bold text-sm px-5 py-2.5 rounded-md border border-cream-300 disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-2"
-                                        disabled>
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+                                    class="btn-action bg-cream-200 hover:bg-cream-300 text-navy-700 font-bold text-sm px-5 py-2.5 rounded-md border border-cream-300 disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-2"
+                                    disabled>
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
                                     </svg>
                                     Prev
                                 </button>
 
                                 <button id="btn-next" onclick="doNavigate('next')"
-                                        class="btn-action bg-navy-900 hover:bg-navy-800 text-white font-bold text-sm px-5 py-2.5 rounded-md disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-2"
-                                        disabled>
+                                    class="btn-action bg-navy-900 hover:bg-navy-800 text-white font-bold text-sm px-5 py-2.5 rounded-md disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-2"
+                                    disabled>
                                     Next
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
                                     </svg>
                                 </button>
                             </div>
@@ -696,7 +838,8 @@
     <footer class="border-t border-cream-300 mt-8 relative">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-2">
             <div class="flex items-center gap-2">
-                <img src="{{ url_for('static', filename='unj.png') }}" alt="UNJ" class="w-6 h-6 object-contain opacity-60" />
+                <img src="{{ url_for('static', filename='unj.png') }}" alt="UNJ"
+                    class="w-6 h-6 object-contain opacity-60" />
                 <span class="text-navy-500 text-[11px] font-medium">Universitas Negeri Jakarta</span>
             </div>
             <p class="text-navy-400 text-[11px] font-medium text-center sm:text-right">
@@ -713,13 +856,13 @@
         let toastTimeout = null;
 
         function showToast(title, message, type = 'success') {
-            const toast    = document.getElementById('toast');
-            const tTitle   = document.getElementById('toast-title');
-            const tMsg     = document.getElementById('toast-msg');
-            const tIcon    = document.getElementById('toast-icon');
+            const toast = document.getElementById('toast');
+            const tTitle = document.getElementById('toast-title');
+            const tMsg = document.getElementById('toast-msg');
+            const tIcon = document.getElementById('toast-icon');
 
             tTitle.textContent = title;
-            tMsg.textContent   = message;
+            tMsg.textContent = message;
 
             // Reset classes
             toast.className = 'fixed z-[9999] max-w-sm w-[90%] sm:w-full rounded-2xl p-6 sm:p-8 flex flex-col items-center justify-center text-center gap-3 border shadow-2xl bg-white';
@@ -727,20 +870,20 @@
             if (type === 'success') {
                 toast.classList.add('border-green-400');
                 tTitle.className = 'font-extrabold text-xl text-green-900 tracking-tight';
-                tMsg.className   = 'text-sm mt-1 text-green-800 font-medium';
-                tIcon.innerHTML  = '<svg class="w-16 h-16 text-green-500 mx-auto" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>';
+                tMsg.className = 'text-sm mt-1 text-green-800 font-medium';
+                tIcon.innerHTML = '<svg class="w-16 h-16 text-green-500 mx-auto" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>';
             } else {
                 toast.classList.add('border-red-400');
                 tTitle.className = 'font-extrabold text-xl text-red-900 tracking-tight';
-                tMsg.className   = 'text-sm mt-1 text-red-800 font-medium';
-                tIcon.innerHTML  = '<svg class="w-16 h-16 text-red-500 mx-auto" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd" /></svg>';
+                tMsg.className = 'text-sm mt-1 text-red-800 font-medium';
+                tIcon.innerHTML = '<svg class="w-16 h-16 text-red-500 mx-auto" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd" /></svg>';
             }
 
             const overlay = document.getElementById('toast-overlay');
-            if(overlay) overlay.classList.remove('hidden');
-            
+            if (overlay) overlay.classList.remove('hidden');
+
             requestAnimationFrame(() => {
-                if(overlay) {
+                if (overlay) {
                     overlay.classList.remove('opacity-0');
                     overlay.classList.add('opacity-100');
                 }
@@ -755,7 +898,7 @@
             const overlay = document.getElementById('toast-overlay');
             toast.classList.remove('show');
             toast.classList.add('hide');
-            
+
             if (overlay) {
                 overlay.classList.remove('opacity-100');
                 overlay.classList.add('opacity-0');
@@ -784,9 +927,9 @@
         function getFormData() {
             return {
                 id_pasien: document.getElementById('input-id').value.trim(),
-                nama:      document.getElementById('input-nama').value.trim(),
-                usia:      document.getElementById('input-usia').value.trim(),
-                diagnosa:  document.getElementById('input-diagnosa').value.trim(),
+                nama: document.getElementById('input-nama').value.trim(),
+                usia: document.getElementById('input-usia').value.trim(),
+                diagnosa: document.getElementById('input-diagnosa').value.trim(),
             };
         }
 
@@ -794,7 +937,10 @@
             ['input-id', 'input-nama', 'input-usia', 'input-diagnosa', 'input-target'].forEach(id => {
                 document.getElementById(id).value = '';
             });
+            // Sembunyikan panel target dan reset label tombol Tengah
             document.getElementById('target-id-group').classList.add('hidden');
+            const btnTengah = document.getElementById('btn-tengah');
+            if (btnTengah) btnTengah.innerHTML = '◆ Tengah';
         }
 
         function validateForm(includeTarget = false) {
@@ -844,13 +990,23 @@
             }
         }
 
+        // Tombol ◆ Tengah: pertama klik → buka panel input target.
+        // Setelah panel terbuka, tombol berubah menjadi "➜ Jalankan Insert Tengah".
+        // Klik tombol lagi → eksekusi doInsertTengah().
         function showTargetAndInsert() {
             const group = document.getElementById('target-id-group');
+            const btnTengah = document.getElementById('btn-tengah');
+
             if (group.classList.contains('hidden')) {
+                // Buka panel input target
                 group.classList.remove('hidden');
                 document.getElementById('input-target').focus();
+                // Ubah label tombol jadi petunjuk eksekusi
+                if (btnTengah) btnTengah.innerHTML = '➜ Jalankan Insert Tengah';
                 return;
             }
+
+            // Panel sudah terbuka → jalankan operasi
             doInsertTengah();
         }
 
@@ -858,8 +1014,28 @@
             const data = validateForm(true);
             if (!data) return;
 
+            // Deteksi apakah ID pasien SUDAH ADA di DLL (mode Move/Edit)
+            // vs ID baru yang belum ada (mode Insert Tengah biasa).
+            // Caranya: cek lewat /api/cari dulu sebelum memutuskan endpoint.
+            let isExistingNode = false;
             try {
-                const res = await fetch('/api/insert/tengah', {
+                const checkRes = await fetch('/api/cari', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id_pasien: data.id_pasien }),
+                });
+                const checkJson = await checkRes.json();
+                isExistingNode = checkJson.success === true;
+            } catch (_) {
+                // Jika cek gagal, asumsikan insert baru
+                isExistingNode = false;
+            }
+
+            // Pilih endpoint: move (node sudah ada) atau insert biasa (node baru)
+            const endpoint = isExistingNode ? '/api/move/tengah' : '/api/insert/tengah';
+
+            try {
+                const res = await fetch(endpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data),
@@ -1004,9 +1180,9 @@
                 resultBoxNama.classList.add('hidden'); // Sembunyikan hasil cari by nama
 
                 if (json.success && json.data) {
-                    document.getElementById('search-res-id').textContent       = json.data.id_pasien;
-                    document.getElementById('search-res-nama').textContent     = json.data.nama;
-                    document.getElementById('search-res-usia').textContent     = json.data.usia + ' Tahun';
+                    document.getElementById('search-res-id').textContent = json.data.id_pasien;
+                    document.getElementById('search-res-nama').textContent = json.data.nama;
+                    document.getElementById('search-res-usia').textContent = json.data.usia + ' Tahun';
                     document.getElementById('search-res-diagnosa').textContent = json.data.diagnosa;
 
                     resultBox.classList.remove('hidden');
@@ -1061,75 +1237,75 @@
                     showToast('Ditemukan', json.message, 'success');
                 } else {
                     resultBoxNama.classList.add('hidden');
-                showToast('Tidak Ditemukan', json.message || 'Pasien tidak ditemukan.', 'error');
-            }
-        } catch (err) {
-            showToast('Error', 'Gagal menghubungi server.', 'error');
-        } finally {
-            setButtonLoading(btn, false);
-        }
-    }
-
-    // Logic Tambahan (Penguat: Musulmonov, 2024) - Toggle Sorting
-    let isSortedAZ = false;
-
-    // Label HTML untuk dua state tombol sort
-    const SORT_LABEL_AZ     = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7.5L7.5 3m0 0L12 7.5M7.5 3v13.5m13.5 0L16.5 21m0 0L12 16.5m4.5 4.5V7.5" /></svg> Sort A-Z`;
-    const SORT_LABEL_RESET  = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" /></svg> Urutan Asli`;
-
-    async function doSortByNama(btn) {
-        setButtonLoading(btn, true);
-        try {
-            if (!isSortedAZ) {
-                // === STATE: belum sorted → Sort A-Z ===
-                // Backend /api/sort/nama sudah otomatis menyimpan presort_snapshot.json
-                // sebelum mengeksekusi sort — tidak perlu /api/backup manual dari sini.
-                const res  = await fetch('/api/sort/nama', { method: 'POST' });
-                const json = await res.json();
-
-                if (json.success) {
-                    isSortedAZ = true;
-                    // Sinkronkan dataset.originalHtml agar setButtonLoading di finally
-                    // mengembalikan tombol ke label BARU (Urutan Asli), bukan label lama
-                    btn.dataset.originalHtml = SORT_LABEL_RESET;
-                    showToast('Sorting Berhasil!', 'Data diurutkan A-Z. Klik "Urutan Asli" untuk memulihkan urutan sebelumnya.', 'success');
-                } else {
-                    btn.dataset.originalHtml = SORT_LABEL_AZ;
-                    showToast('Sorting Gagal!', json.message, 'error');
+                    showToast('Tidak Ditemukan', json.message || 'Pasien tidak ditemukan.', 'error');
                 }
-                refreshAll();
-            } else {
-                // === STATE: sudah sorted → Restore urutan asli dari presort_snapshot.json ===
-                // Gunakan endpoint khusus /api/restore/presort — terisolasi dari backup reguler
-                const res  = await fetch('/api/restore/presort', { method: 'POST' });
-                const json = await res.json();
-
-                if (json.success) {
-                    isSortedAZ = false;
-                    btn.dataset.originalHtml = SORT_LABEL_AZ;
-                    showToast('Urutan Asli Dikembalikan', 'Data berhasil dipulihkan ke urutan penyisipan awal.', 'success');
-                } else {
-                    btn.dataset.originalHtml = SORT_LABEL_RESET;
-                    showToast('Gagal Mengembalikan', json.message, 'error');
-                }
-                refreshAll();
+            } catch (err) {
+                showToast('Error', 'Gagal menghubungi server.', 'error');
+            } finally {
+                setButtonLoading(btn, false);
             }
-        } catch (err) {
-            showToast('Error', 'Gagal menghubungi server.', 'error');
-        } finally {
-            // setButtonLoading restore innerHTML dari dataset.originalHtml
-            // yang sudah di-update di atas → label selalu benar
-            setButtonLoading(btn, false);
         }
-    }
 
-    // Logic Tambahan (Penguat: Musulmonov, 2024) - Fungsi Update Data Pasien
+        // Logic Tambahan (Penguat: Musulmonov, 2024) - Toggle Sorting
+        let isSortedAZ = false;
+
+        // Label HTML untuk dua state tombol sort
+        const SORT_LABEL_AZ = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7.5L7.5 3m0 0L12 7.5M7.5 3v13.5m13.5 0L16.5 21m0 0L12 16.5m4.5 4.5V7.5" /></svg> Sort A-Z`;
+        const SORT_LABEL_RESET = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" /></svg> Urutan Asli`;
+
+        async function doSortByNama(btn) {
+            setButtonLoading(btn, true);
+            try {
+                if (!isSortedAZ) {
+                    // === STATE: belum sorted → Sort A-Z ===
+                    // Backend /api/sort/nama sudah otomatis menyimpan presort_snapshot.json
+                    // sebelum mengeksekusi sort — tidak perlu /api/backup manual dari sini.
+                    const res = await fetch('/api/sort/nama', { method: 'POST' });
+                    const json = await res.json();
+
+                    if (json.success) {
+                        isSortedAZ = true;
+                        // Sinkronkan dataset.originalHtml agar setButtonLoading di finally
+                        // mengembalikan tombol ke label BARU (Urutan Asli), bukan label lama
+                        btn.dataset.originalHtml = SORT_LABEL_RESET;
+                        showToast('Sorting Berhasil!', 'Data diurutkan A-Z. Klik "Urutan Asli" untuk memulihkan urutan sebelumnya.', 'success');
+                    } else {
+                        btn.dataset.originalHtml = SORT_LABEL_AZ;
+                        showToast('Sorting Gagal!', json.message, 'error');
+                    }
+                    refreshAll();
+                } else {
+                    // === STATE: sudah sorted → Restore urutan asli dari presort_snapshot.json ===
+                    // Gunakan endpoint khusus /api/restore/presort — terisolasi dari backup reguler
+                    const res = await fetch('/api/restore/presort', { method: 'POST' });
+                    const json = await res.json();
+
+                    if (json.success) {
+                        isSortedAZ = false;
+                        btn.dataset.originalHtml = SORT_LABEL_AZ;
+                        showToast('Urutan Asli Dikembalikan', 'Data berhasil dipulihkan ke urutan penyisipan awal.', 'success');
+                    } else {
+                        btn.dataset.originalHtml = SORT_LABEL_RESET;
+                        showToast('Gagal Mengembalikan', json.message, 'error');
+                    }
+                    refreshAll();
+                }
+            } catch (err) {
+                showToast('Error', 'Gagal menghubungi server.', 'error');
+            } finally {
+                // setButtonLoading restore innerHTML dari dataset.originalHtml
+                // yang sudah di-update di atas → label selalu benar
+                setButtonLoading(btn, false);
+            }
+        }
+
+        // Logic Tambahan (Penguat: Musulmonov, 2024) - Fungsi Update Data Pasien
         function populateFormFromData(btn) {
             document.getElementById('input-id').value = btn.dataset.id;
             document.getElementById('input-nama').value = btn.dataset.nama;
             document.getElementById('input-usia').value = btn.dataset.usia;
             document.getElementById('input-diagnosa').value = btn.dataset.diagnosa;
-            
+
             showToast('Mode Edit Aktif', 'Data dimuat ke form. Silakan edit dan klik tombol Update.', 'success');
             document.getElementById('input-nama').focus();
         }
@@ -1139,7 +1315,7 @@
         // ===================================================================
         async function refreshTable() {
             try {
-                const res  = await fetch('/api/pasien');
+                const res = await fetch('/api/pasien');
                 const json = await res.json();
                 const tbody = document.getElementById('table-body');
                 const empty = document.getElementById('empty-table');
@@ -1263,7 +1439,7 @@
         // ===================================================================
         async function refreshNav() {
             try {
-                const res  = await fetch('/api/navigate/current');
+                const res = await fetch('/api/navigate/current');
                 const json = await res.json();
                 updateNavUI(json);
             } catch (err) {
@@ -1273,7 +1449,7 @@
 
         async function doNavigate(direction) {
             try {
-                const res  = await fetch(`/api/navigate/${direction}`, { method: 'POST' });
+                const res = await fetch(`/api/navigate/${direction}`, { method: 'POST' });
                 const json = await res.json();
                 updateNavUI(json);
             } catch (err) {
@@ -1283,9 +1459,9 @@
 
         function updateNavUI(json) {
             const navEmpty = document.getElementById('nav-empty');
-            const navData  = document.getElementById('nav-data');
-            const btnPrev  = document.getElementById('btn-prev');
-            const btnNext  = document.getElementById('btn-next');
+            const navData = document.getElementById('nav-data');
+            const btnPrev = document.getElementById('btn-prev');
+            const btnNext = document.getElementById('btn-next');
 
             if (!json.success || !json.data) {
                 navEmpty.classList.remove('hidden');
@@ -1299,9 +1475,9 @@
             navEmpty.classList.add('hidden');
             navData.classList.remove('hidden');
 
-            document.getElementById('nav-id').textContent       = json.data.id_pasien;
-            document.getElementById('nav-nama').textContent     = json.data.nama;
-            document.getElementById('nav-usia').textContent     = json.data.usia + ' Tahun';
+            document.getElementById('nav-id').textContent = json.data.id_pasien;
+            document.getElementById('nav-nama').textContent = json.data.nama;
+            document.getElementById('nav-usia').textContent = json.data.usia + ' Tahun';
             document.getElementById('nav-diagnosa').textContent = json.data.diagnosa;
 
             btnPrev.disabled = !json.has_prev;
@@ -1369,4 +1545,5 @@
     </script>
 
 </body>
+
 </html>
